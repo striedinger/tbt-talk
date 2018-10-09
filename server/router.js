@@ -16,6 +16,6 @@ module.exports = async function(router) {
       });//push results to new array that contains story id, url and comment count
     }
     res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
-    return res.status(202).json(results);//send back in json format
+    return res.status(200).json(results);//send back in json format
   });
 }
