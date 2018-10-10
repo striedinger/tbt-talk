@@ -3,12 +3,12 @@ const Comments = require("models/comment");
 const mongoose = require("../../../services/mongoose");
 
 module.exports = async function(router) {
-  router.get("/api/tbt/top_counts", async function (req, res, next) {
-    var urls = req.query.urls? req.query.urls.split(",") : [];//Grab all urls in the get param
-    var assets  = await Assets.find({"url": {$in: urls}});//find all stories in the urls array
-    var results = [];
+  router.get("/api/tbt/comments/count", async function (req, res, next) {
+    let urls = req.query.urls? req.query.urls.split(",") : [];//Grab all urls in the get param
+    let assets  = await Assets.find({"url": {$in: urls}});//find all stories in the urls array
+    let results = [];
     for(asset of assets) {
-      var count = await Comments.find({"asset_id" : asset.id}).count();//grab comment count for each story in urls array
+      let count = await Comments.find({"asset_id" : asset.id}).count();//grab comment count for each story in urls array
       results.push({
         id: asset.id,
         url: asset.url,
