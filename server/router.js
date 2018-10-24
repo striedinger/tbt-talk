@@ -8,7 +8,7 @@ module.exports = async function(router) {
     let assets  = await Assets.find({"url": {$in: urls}});//find all stories in the urls array
     let results = [];
     for(asset of assets) {
-      let count = await Comments.find({"asset_id" : asset.id}).count();//grab comment count for each story in urls array
+      let count = await Comments.countDocuments({"asset_id" : asset.id}).count();//grab comment count for each story in urls array
       results.push({
         id: asset.id,
         url: asset.url,
