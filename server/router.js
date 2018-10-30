@@ -8,12 +8,13 @@ module.exports = async function(router) {
     let assets  = await Assets.find({"url": {$in: urls}});//find all stories in the urls array
     let results = [];
     for(asset of assets) {
-      let count = await Comments.countDocuments({"asset_id" : asset.id}).count();//grab comment count for each story in urls array
+      let count = await Comments.countDocuments({"asset_id" : asset.id, "status" : "ACCEPTED"}).count();//grab comment count for each story in urls array with ACCEPTED status
       results.push({
         id: asset.id,
         url: asset.url,
-        comments: count
-      });//push results to new array that contains story id, url and comment count
+        comments: count,
+	closed: (asset.closedAt==null)? false : true
+      });//push results to new array that contains story id, url, comment count and closed status
     }
     res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
     return res.status(200).json(results);//send back in json format
