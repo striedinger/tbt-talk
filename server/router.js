@@ -22,7 +22,7 @@ module.exports = async function (router) {
       promises.push(Comments.find({
         "asset_id": asset.id,
         "status": {
-          $ne: "REJECTED"
+          $nin: ["REJECTED", "REPORTED"]
         }
       }).count());
     }
@@ -53,7 +53,7 @@ module.exports = async function (router) {
     for (id of ids) {
       promises.push(Comments.find({ "asset_id": id,
         "status": {
-          $ne: "REJECTED"
+          $nin: ["REJECTED", "REPORTED"]
         }
       }).count());
     }
