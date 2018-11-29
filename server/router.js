@@ -1,22 +1,72 @@
 const Assets = require("models/asset");
 const Comments = require("models/comment");
-const mongoose = require("../../../services/mongoose");
 
-module.exports = async function(router) {
-  router.get("/api/tbt/comments/count", async function (req, res, next) {
-    let urls = req.query.urls? req.query.urls.split(",") : [];//Grab all urls in the get param
-    let assets  = await Assets.find({"url": {$in: urls}});//find all stories in the urls array
+const maxAge = (10 * 60); //Cache duration, in seconds
+
+module.exports = async function (router) {
+  router.get("/api/tbt/comments/count/url", async function (req, res) {
+    let urls = req.query.urls ? req.query.urls.split(",") : []; //Grab all urls in the query param
     let results = [];
-    for(asset of assets) {
-      let count = await Comments.countDocuments({"asset_id" : asset.id, "status" : {$ne: "REJECTED"}}).count();//grab comment count for each story in urls array with status not equal to REJECTED
-      results.push({
-        id: asset.id,
-        url: asset.url,
-        comments: count,
-	closed: (asset.closedAt==null)? false : true
-      });//push results to new array that contains story id, url, comment count and closed status
+    let promises = [];
+    // Send back the headers
+    res.setHeader("Cache-Control", `public, max-age=${maxAge}`);
+    res.setHeader("Content-Type", "application/json");
+
+    let assets = await Assets.find({
+      "url": {
+        $in: urls
+      }
+    }); //find all stories in the urls array
+    for (asset of assets) {
+      promises.push(Comments.find({
+        "asset_id": asset.id,
+        "status": {
+          $ne: "REJECTED"
+        }
+      }).count());
     }
-    res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
-    return res.status(200).json(results);//send back in json format
+    Promise.all(promises).then(function (counts) {
+      for (let i = 0; i < counts.length; i++) {
+        results.push({
+          id: assets[i].id,
+          url: assets[i].url,
+          count: counts[i],
+          closed: (assets[i].closedAt == null) ? false : true
+        });
+      }
+      //res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
+      return res.json(results); //send back in json format
+    }).catch(function () {
+      return res.status(500).send('Failed to resolve all queries');
+    });
+  });
+
+  router.get("/api/tbt/comments/count/id", async function (req, res) {
+    let ids = req.query.ids ? req.query.ids.split(",") : []; //Grab all ids in the query param
+    let results = [];
+    let promises = [];
+    // Send back the headers
+    res.setHeader("Cache-Control", `public, max-age=${maxAge}`);
+    res.setHeader("Content-Type", "application/json");
+
+    for (id of ids) {
+      promises.push(Comments.find({ "asset_id": id,
+        "status": {
+          $ne: "REJECTED"
+        }
+      }).count());
+    }
+    Promise.all(promises).then(function (counts) {
+      for (let i = 0; i < counts.length; i++) {
+        results.push({
+          id: ids[i],
+          count: counts[i],
+        });
+      }
+      //res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
+      return res.json(results); //send back in json format
+    }).catch(function () {
+      return res.status(500).send('Failed to resolve all queries');
+    });
   });
 }
