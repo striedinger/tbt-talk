@@ -11,8 +11,8 @@ module.exports = async function (router) {
     // Send back the headers
     res.setHeader("Cache-Control", `public, max-age=${maxAge}`);
     res.setHeader("Content-Type", "application/json");
-    //res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
-    
+    res.setHeader("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
+
     let assets = await Assets.find({
       "url": {
         $in: urls
@@ -48,7 +48,7 @@ module.exports = async function (router) {
     // Send back the headers
     res.setHeader("Cache-Control", `public, max-age=${maxAge}`);
     res.setHeader("Content-Type", "application/json");
-    //res.header("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
+    res.setHeader("Access-Control-Allow-Origin", "*");//Change to include only valid domain on production (VERY important)
 
     for (id of ids) {
       promises.push(Comments.find({ "asset_id": id,
