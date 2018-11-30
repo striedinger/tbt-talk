@@ -27,12 +27,12 @@ module.exports = async function (router) {
       }).count());
     }
     Promise.all(promises).then(function (counts) {
+      let date = new Date();
       for (let i = 0; i < counts.length; i++) {
         results.push({
           id: assets[i].id,
           url: assets[i].url,
-          count: counts[i],
-          closed: (assets[i].closedAt == null) ? false : true
+          count: counts[i]
         });
       }
       return res.json(results); //send back in json format
